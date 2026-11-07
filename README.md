@@ -7,7 +7,7 @@
 - **Owner:** Dandan Zhang
 - **Brand:** Diana — PA to Dandan
 
-The application in this repository is independent of the MSEI Lab website, has no dependency on its GitHub repository, and must not use its custom domain.
+The application in this repository is independent of the MSEI Lab website, has no dependency on its GitHub repository, and must not use its custom domain. AI chat requires a valid student activation code.
 
 ## What students can do
 
@@ -43,6 +43,113 @@ The planned full-handbook workflow is:
 
 Existing course tutorials currently link to a **private** GitHub course repository and may need student permissions. Approved public extracts can be added here in due course.
 
+## Student activation-code access (new)
+
+**Diana AI chat is now designed to require a student activation code.**
+Public topic cards and permitted teaching resources are still visible to anyone
+with the GitHub Pages URL; **a static GitHub Pages site cannot make published
+handbooks or files private**. The AI backend checks authorisation on every question.
+
+### Student experience
+
+1. The student opens the Diana site and sees **Activate your Diana access**.
+2. The instructor sends them a unique code of the form
+   `DIANA-XXXX-XXXX-XXXX-XXXX` through an approved private channel.
+3. They enter it, complete Turnstile, and click **Activate Diana**.
+4. Cloudflare validates the code and issues a signed browser session (up to
+   **24 hours**, or shorter if the code expires first). The signed token is
+   stored in this browser tab's session storage, *not the raw activation code*.
+5. Every AI question includes the session token. The backend verifies the
+   signature **and checks the code's current enabled/expiry status again**,
+   rejecting revoked or expired students before invoking OpenAI.
+6. Students can click **Deactivate** to remove their local session.
+
+A code is a bearer credential: students **could share it**. This setup
+controls who can use the AI API and gives you per-code revocation, but it
+does not cryptographically establish a student's university identity.
+For stronger identity restrictions, use institutional SSO instead of codes.
+
+### Cloudflare configuration
+
+Create **two** Workers KV namespaces:
+- `RATE_LIMIT` for activation-attempt and question limits;
+- `ACCESS_CODES` for SHA-256 keys mapped to enabled/expiry metadata.
+
+Edit [backend/wrangler.toml](backend/wrangler.toml) to fill both namespace IDs.
+Cloudflare Worker requires **three private secrets**:
+
+```bash
+npx wrangler deploy --config backend/wrangler.toml
+npx wrangler secret put OPENAI_API_KEY --config backend/wrangler.toml
+npx wrangler secret put TURNSTILE_SECRET --config backend/wrangler.toml
+npx wrangler secret put SESSION_SECRET --config backend/wrangler.toml
+```
+
+Generate a long random `SESSION_SECRET` locally; e.g. this command prints
+a 64-character hex value that you enter into the private Wrangler prompt:
+
+```bash
+node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+```
+
+**Do not publish** any of these secrets, raw activation codes or CSV lists
+to GitHub, email groups, public chat, or the browser's `config.json`.
+
+### Issue student activation codes
+
+From your **local terminal** in the cloned `deep-learning-TA` repository,
+after `npx wrangler login` and creating both KV namespaces:
+
+```bash
+node scripts/issue_codes.mjs --count 30 --expires 2027-01-31 --prefix DL27 --output diana-private-codes.csv
+```
+
+This generates **30 different high-entropy codes**, stores their **hashed
+keys** and permitted status in Cloudflare ACCESS_CODES, and creates a
+**private local** `diana-private-codes.csv` with the code for each student
+and the corresponding `kv_key`. The CSV is ignored by Git and must be
+stored securely. It contains `label`, `activation_code`, `kv_key`, and
+`expiry_utc`. Associate the labels with student recipients only in an
+appropriate private institutional record.
+
+Send one code privately to each student. Do not distribute a single code
+to the whole class if you need per-student revocation or usage control.
+Codes initially permit up to **20 questions per hour** per code (the
+Cloudflare KV counter is approximate because KV is eventually consistent).
+
+**Do not distribute codes before verifying that the Cloudflare KV entries
+have been provisioned successfully.** If provisioning fails part way through,
+inspect the Cloudflare namespace and reconcile the locally saved list;
+do not blindly distribute or regenerate codes.
+
+### Revoke a student's code
+
+Use the `kv_key` from your private CSV, without revealing the raw code:
+
+```bash
+node scripts/revoke_code.mjs --kv-key access:REPLACE_WITH_THE_64_CHARACTER_HASH
+```
+
+This updates the Cloudflare record to `enabled:false`. New activations
+are refused and existing sessions fail on the next backend check, subject
+to Cloudflare KV propagation delay. For emergency mass invalidation,
+rotate `SESSION_SECRET` (invalidates existing signed sessions) and revoke
+the affected code entries.
+
+### Privacy, rate limits and student communications
+
+- No university email or CID is collected by this basic activation form.
+- A student code is not proof of student identity; treat it as private.
+- Avoid collecting student work or personal data via public AI chat.
+- Allow authorised students to ask while disabling all AI answers for
+  visitors without an active validated session.
+- The site remains visibly a public GitHub Pages website; file URLs
+  already published there are **not** protected by activation codes.
+- For high-volume usage, replace the approximate KV per-hour limiter with
+  stronger edge rate limits and review operational costs.
+- The activation code checker has not yet been tested against a deployed
+  Cloudflare Worker; deploy and test before inviting students.
+
 ## Activating live generative AI
 
 **Current state:** structured Diana response prompt and backend code are committed,
@@ -59,7 +166,7 @@ this repository, a notebook, or the website's public `config.json`.
 ### Step 2 — Prepare Cloudflare
 
 Sign in to https://dash.cloudflare.com/ and create a Cloudflare Workers
-project. Create a KV namespace for rate limiting; copy **its namespace ID**
+project. Create two KV namespaces for rate limiting and student access codes; copy **their namespace IDs**
 (not a secret). Create a Cloudflare Turnstile widget allowing the hostname
 `dianzdd123.github.io`, and save its **public site key** and **secret key**
 separately. Turnstile verifies requests but is not a substitute for stronger
