@@ -55,7 +55,7 @@ export default {
   if(origin!==ORIGIN)return error(403,"Origin not permitted");
   if(request.method==="OPTIONS")return new Response(null,{status:204,headers:CORS});
   if(request.method!=="POST")return error(405,"POST required");
-  const pathname=new URL(request.url).pathname.replace(/\\/$/,"");
+  const pathname=new URL(request.url).pathname;
   if(pathname==="/activate"){
     if(!String(request.headers.get("content-type")||"").includes("application/json"))
       return error(415,"JSON required.");
