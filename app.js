@@ -1,8 +1,77 @@
 "use strict";
 const $=id=>document.getElementById(id);
 let knowledge=null,config=null,mode="understand",filter="all",waiting=false,history=[];
+let sessionToken="",tokenExpires=0,turnstileWidget=null;
 const safeURL=url=>{try{const u=new URL(url,location.href);return u.protocol==="https:"||u.protocol==="http:"?u.href:null;}catch{return null;}};
 function node(tag,cl,text){const e=document.createElement(tag);if(cl)e.className=cl;if(text!==undefined)e.textContent=text;return e;}
+const TOKEN_KEY="diana_access_session";
+const EXPIRY_KEY="diana_access_expiry";
+function endpoint(path){
+  if(!config?.model_service_url)return null;
+  try{const url=new URL(config.model_service_url,location.href);
+    if(url.protocol!=="https:")return null;
+    url.pathname=url.pathname.replace(/\\/$/,"")+"/"+path;
+    return url.href;
+  }catch{return null;}
+}
+function setGate(unlocked,label){
+  const chat=document.querySelector(".chat");
+  chat.classList.toggle("is-unlocked",unlocked);
+  $("activation-gate").hidden=unlocked;
+  $("unlocked-session").hidden=!unlocked;
+  if(label)$("access-label").textContent="Access active · "+label;
+  $("send").disabled=!unlocked;
+}
+function forgetSession(message){
+  sessionToken="";tokenExpires=0;
+  sessionStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(EXPIRY_KEY);
+  history=[];
+  setGate(false);
+  if(message)$("activation-feedback").textContent=message;
+}
+function resetVerification(){
+  try{if(window.turnstile&&turnstileWidget!==null)window.turnstile.reset(turnstileWidget);}catch{}
+}
+async function verifyExistingSession(){
+  const token=sessionStorage.getItem(TOKEN_KEY)||"";
+  const expiry=Number(sessionStorage.getItem(EXPIRY_KEY)||0);
+  if(!token||Date.now()>=expiry){forgetSession();return;}
+  try{
+    const response=await fetch(endpoint("session"),{method:"POST",headers:{"Authorization":"Bearer "+token},signal:AbortSignal.timeout(10000)});
+    if(!response.ok)throw Error("Session invalid");
+    const data=await response.json();
+    sessionToken=token;tokenExpires=Date.parse(data.expires_at);
+    setGate(true,data.access_label||"Course student");
+  }catch{forgetSession("Please activate Diana using your course access code.");}
+}
+async function activateStudent(){
+  if(!config?.allow_live_ai||!config.model_service_url||!config.turnstile_site_key){
+    $("activation-feedback").textContent="Diana's AI backend is not active yet. Please contact the module team.";
+    return;
+  }
+  const code=$("activation-code").value.trim();
+  const verification=window.turnstile?.getResponse?.(turnstileWidget)||"";
+  if(!verification){$("activation-feedback").textContent="Complete the verification above before activating.";return;}
+  $("activate").disabled=true;
+  $("activation-feedback").textContent="Checking your course access…";
+  try{
+    const response=await fetch(endpoint("activate"),{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({code,turnstile_token:verification}),signal:AbortSignal.timeout(13000)
+    });
+    const data=await response.json();
+    if(!response.ok||!data.session_token)throw Error(data.error||"The activation code could not be verified.");
+    sessionToken=data.session_token;
+    tokenExpires=Date.parse(data.expires_at);
+    sessionStorage.setItem(TOKEN_KEY,sessionToken);
+    sessionStorage.setItem(EXPIRY_KEY,String(tokenExpires));
+    $("activation-code").value="";
+    setGate(true,data.access_label||"Course student");
+    $("question").focus();
+  }catch(err){$("activation-feedback").textContent=err.message||"Activation failed.";}
+  finally{$("activate").disabled=false;resetVerification();}
+}
 function sourceGroup(parent,title,refs){if(!Array.isArray(refs)||!refs.length)return;const block=node("div","source-group");block.append(node("p","source-heading",title));for(const item of refs.slice(0,2)){const link=safeURL(item.url);if(!link)continue;const a=node("a","citation-link");a.href=link;a.target="_blank";a.rel="noopener noreferrer";a.append(node("span","citation-title",item.title+(item.label?" · "+item.label:"")+" ↗"));if(item.why)a.append(node("small","citation-why",item.why));block.append(a);}parent.append(block);}
 function renderDianaAnswer(parent,answer){const wrap=node("div","diana-structured");const intro=node("p","diana-intro","Hi, I'm Diana. Here's my answer.");wrap.append(intro);if(answer.brief_answer){wrap.append(node("h3","","My brief answer"));wrap.append(node("p","",answer.brief_answer));}if(answer.explanation){wrap.append(node("h3","","Let's understand why"));wrap.append(node("p","",answer.explanation));}
 const refs=answer.references||{};
@@ -20,8 +89,61 @@ function suggested(text){$("question").value=text;$("question").focus();location
 function topMatches(question){const q=question.toLowerCase(),terms=q.match(/[a-z0-9]+/g)||[];return knowledge.topics.map(t=>{let score=0;const s=t.title.toLowerCase();for(const word of terms){if(word.length<3)continue;if(s.includes(word))score+=4;for(const k of t.keywords){if(k.includes(word)||word.includes(k))score+=3;}if(t.description.toLowerCase().includes(word))score+=1;}return{t,score};}).sort((a,b)=>b.score-a.score).filter(x=>x.score>0);}
 function offlineAnswer(q){const results=topMatches(q);if(!results.length)return {text:"I couldn't find a close match in the current course notes. Try naming the topic, a specific error, or an experiment you are working on. You can also browse the learning library below. I don't want to invent a course rule or claim to have consulted material I haven't seen.",sources:[]};const t=results[0].t;let lead="Here is a starting point from the course learning library:\n\n";if(mode==="debug")lead="Let's diagnose the smallest reproducible example first. What did you expect, and what actually happened?\n\n";if(mode==="reason")lead="Let's separate the claim from the evidence supporting it.\n\n";return {text:lead+t.answer+"\n\nThis is a guided note, not a newly generated AI answer. For a more specific explanation, consult the linked sources or ask again once live AI has been enabled.",sources:t.sources};}
 function renderTopics(){const search=$("search").value.trim().toLowerCase(),items=knowledge.topics.filter(t=>(filter==="all"||t.category===filter)&&(!search||[t.title,t.category,t.description,...t.keywords].join(" ").toLowerCase().includes(search)));const root=$("topics");root.replaceChildren();if(!items.length){root.append(node("p","","No matching topics. Try a broader search."));return;}for(const t of items){const card=node("article","topic"),over=node("div"),cat=node("span","category",t.category),num=node("span","number"," · "+String(knowledge.topics.indexOf(t)+1).padStart(2,"0")),h=node("h3","",t.title),desc=node("p","",t.description),btn=node("button","","Explore with Diana ↗");over.append(cat,num);btn.type="button";btn.addEventListener("click",()=>suggested(t.question));card.append(over,h,desc,btn);root.append(card);}}
-async function ask(question){if(waiting||!knowledge)return;waiting=true;$("send").disabled=true;appendMessage("user",question);$("question").value="";const loading=appendMessage("assistant","Thinking through your question…");try{let result=null;if(config?.allow_live_ai&&config.model_service_url){const url=safeURL(config.model_service_url);if(!url||!url.startsWith("https://"))throw new Error("Invalid secure AI service configuration");const response=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question,mode,history:history.slice(-6),turnstile_token:window.turnstile?.getResponse?.()||""}),signal:AbortSignal.timeout(25000)});if(!response.ok)throw new Error("AI service temporarily unavailable");result=await response.json();if(typeof result.brief_answer!=="string"||!result.references)throw Error("Invalid structured service response");result={structured:result, text:result.brief_answer||"",sources:[]};window.turnstile?.reset?.();}else result=offlineAnswer(question);loading.remove();appendMessage("assistant",result.structured||result.text,result.sources);history.push({role:"user",content:question},{role:"assistant",content:result.text});history=history.slice(-8);}catch(e){loading.remove();const fallback=offlineAnswer(question);appendMessage("assistant","The live AI connection isn't available right now. Here's what I can find in the course learning library:\n\n"+fallback.text,fallback.sources);}finally{waiting=false;$("send").disabled=false;}}
-async function init(){try{const [k,c]=await Promise.all([fetch("./data/knowledge.json",{cache:"no-store"}),fetch("./config.json",{cache:"no-store"})]);if(!k.ok||!c.ok)throw Error("Course materials unavailable");knowledge=await k.json();config=await c.json();$("service-status").textContent=config.allow_live_ai&&config.model_service_url?"AI-assisted tutoring · verify all replies":"Guided course knowledge · live AI not yet enabled";renderTopics();if(config.allow_live_ai&&config.turnstile_site_key){const script=document.createElement("script");script.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";script.async=true;script.defer=true;script.addEventListener("load",()=>window.turnstile?.render?.("#turnstile",{sitekey:config.turnstile_site_key}));document.head.append(script);}}catch{$("service-status").textContent="Course knowledge is unavailable";$("topics").replaceChildren(node("p","","Unable to load the learning library. Please refresh."));$("send").disabled=true;}}
+async function ask(question){
+  if(waiting||!knowledge||!sessionToken||Date.now()>=tokenExpires){forgetSession("Activate Diana to ask questions.");return;}
+  if(!config?.allow_live_ai||!config.model_service_url){forgetSession("The AI service is not available.");return;}
+  waiting=true;$("send").disabled=true;appendMessage("user",question);$("question").value="";
+  const loading=appendMessage("assistant","Thinking through your question…");
+  try {
+    const response=await fetch(endpoint("ask"),{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+sessionToken},
+      body:JSON.stringify({question,mode,history:history.slice(-6)}),
+      signal:AbortSignal.timeout(25000)
+    });
+    let data;try{data=await response.json();}catch{data={};}
+    if(response.status===401||response.status===403){
+      loading.remove();forgetSession(data.error||"Please activate Diana again.");return;
+    }
+    if(!response.ok)throw Error(data.error||"AI service temporarily unavailable.");
+    if(typeof data.brief_answer!=="string"||!data.references)throw Error("Invalid AI response.");
+    loading.remove();
+    appendMessage("assistant",data);
+    history.push({role:"user",content:question},{role:"assistant",content:data.brief_answer});
+    history=history.slice(-8);
+  }catch(err){
+    loading.remove();
+    appendMessage("assistant","I couldn't answer this question right now. "+(err.message||"Please try again."));
+  }finally{waiting=false;$("send").disabled=!sessionToken;}
+}
+async function init(){
+  setGate(false);
+  try {
+    const [k,c]=await Promise.all([
+      fetch("./data/knowledge.json",{cache:"no-store"}),
+      fetch("./config.json",{cache:"no-store"})
+    ]);
+    if(!k.ok||!c.ok)throw Error("Course materials unavailable");
+    knowledge=await k.json();config=await c.json();
+    renderTopics();
+    $("service-status").textContent=config.allow_live_ai&&config.model_service_url?
+      "Student activation required · secure AI tutoring":"AI tutoring not yet active";
+    if(config.allow_live_ai&&config.model_service_url&&config.turnstile_site_key){
+      const script=document.createElement("script");
+      script.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.async=true;script.defer=true;
+      script.addEventListener("load",()=>{turnstileWidget=window.turnstile?.render?.("#turnstile",{sitekey:config.turnstile_site_key})??null;});
+      document.head.append(script);
+      await verifyExistingSession();
+    }else $("activation-feedback").textContent="The AI backend is not yet enabled. You can explore the learning materials below.";
+  }catch{
+    $("service-status").textContent="Course knowledge is unavailable";
+    $("topics").replaceChildren(node("p","","Unable to load the learning library. Please refresh."));
+    $("activation-feedback").textContent="Diana's service is unavailable at present.";
+  }
+}
+$("activation-form").addEventListener("submit",event=>{event.preventDefault();activateStudent();});
+$("sign-out").addEventListener("click",()=>forgetSession("Access deactivated. Enter a course code to start a new session."));
 $("ask-form").addEventListener("submit",e=>{e.preventDefault();const q=$("question").value.trim();if(q.length>=4&&q.length<=2500)ask(q);});
 $("question").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();$("ask-form").requestSubmit();}});
 $("reset").addEventListener("click",()=>{history=[];document.querySelectorAll("#messages .message").forEach((n,i)=>{if(i)n.remove();});$("question").value="";$("question").focus();});
