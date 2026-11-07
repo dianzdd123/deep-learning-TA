@@ -1,0 +1,16 @@
+# Cloudflare Worker configuration for Diana.
+# Change the KV namespace ID below before deploying.
+name = "diana-deep-learning-ta"
+main = "worker.js"
+compatibility_date = "2026-11-07"
+workers_dev = true
+
+[vars]
+OPENAI_MODEL = "gpt-4.1-mini"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "REPLACE_WITH_YOUR_CLOUDFLARE_KV_NAMESPACE_ID"
+
+# OPENAI_API_KEY and TURNSTILE_SECRET are private Cloudflare secrets.
+# NEVER add them here or in the GitHub repository.
