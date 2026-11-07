@@ -1,0 +1,8 @@
+# Private student activation-code lists or credential exports
+diana-private-codes*.csv
+.diana-private/
+*.student-codes.csv
+.env
+.env.*
+.dev.vars
+.dev.vars.*
