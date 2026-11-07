@@ -10,7 +10,7 @@ function endpoint(path){
   if(!config?.model_service_url)return null;
   try{const url=new URL(config.model_service_url,location.href);
     if(url.protocol!=="https:")return null;
-    url.pathname=url.pathname.replace(/\\/$/,"")+"/"+path;
+    url.pathname=(url.pathname.endsWith("/")?url.pathname.slice(0,-1):url.pathname)+"/"+path;
     return url.href;
   }catch{return null;}
 }
