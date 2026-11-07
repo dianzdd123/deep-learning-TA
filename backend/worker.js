@@ -1,11 +1,12 @@
 import {DIANA_SYSTEM_PROMPT, DIANA_RESPONSE_SCHEMA, PROMPT_VERSION} from "./prompt.js";
+import {activateStudent, checkStudentSession, authoriseQuestion} from "./access.js";
 
 // Deploy as a Cloudflare Worker. Secrets live ONLY in Cloudflare.
 // Required: OPENAI_API_KEY, TURNSTILE_SECRET and KV RATE_LIMIT.
 const ORIGIN="https://dianzdd123.github.io";
 const SITE="/deep-learning-TA/";
 const DATA_BASE=ORIGIN+SITE;
-const CORS={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Methods":"POST, OPTIONS","Access-Control-Allow-Headers":"Content-Type","Vary":"Origin"};
+const CORS={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Methods":"POST, OPTIONS","Access-Control-Allow-Headers":"Content-Type, Authorization","Vary":"Origin"};
 const SOURCE_LIMIT=12;
 
 function result(data,status=200){return new Response(JSON.stringify(data),{status,headers:{"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store",...CORS}});}
@@ -54,26 +55,27 @@ export default {
   if(origin!==ORIGIN)return error(403,"Origin not permitted");
   if(request.method==="OPTIONS")return new Response(null,{status:204,headers:CORS});
   if(request.method!=="POST")return error(405,"POST required");
-  if(!env.OPENAI_API_KEY||!env.TURNSTILE_SECRET||!env.RATE_LIMIT)return error(503,"AI backend setup incomplete");
-  if(!String(request.headers.get("content-type")||"").includes("application/json"))return error(415,"JSON required");
-  if(Number(request.headers.get("content-length")||0)>14000)return error(413,"Request too large");
-  let body;try{body=await request.json();}catch{return error(400,"Invalid JSON");}
+  const pathname=new URL(request.url).pathname.replace(/\\/$/,"");
+  if(pathname==="/activate"){
+    if(!String(request.headers.get("content-type")||"").includes("application/json"))
+      return error(415,"JSON required.");
+    if(Number(request.headers.get("content-length")||0)>5000)return error(413,"Request too large.");
+    return activateStudent(request,env,result,error);
+  }
+  if(pathname==="/session")return checkStudentSession(request,env,result,error);
+  if(pathname!==""&&pathname!=="/"&&pathname!=="/ask")
+    return error(404,"Unknown endpoint.");
+  const access=await authoriseQuestion(request,env);
+  if(!access.ok)return error(access.status,access.message);
+  if(!env.OPENAI_API_KEY)return error(503,"AI provider is not configured.");
+  if(!String(request.headers.get("content-type")||"").includes("application/json"))
+    return error(415,"JSON required.");
+  if(Number(request.headers.get("content-length")||0)>14000)
+    return error(413,"Request too large.");
+  let body;try{body=await request.json();}catch{return error(400,"Invalid JSON.");}
   const question=String(body.question||"").trim();
-  if(question.length<4||question.length>2500)return error(400,"Question must be 4–2500 characters");
-  const turnstileToken=String(body.turnstile_token||"");
-  if(!turnstileToken||turnstileToken.length>4096)return error(403,"Human verification required");
-  const verify=new FormData();verify.set("secret",env.TURNSTILE_SECRET);verify.set("response",turnstileToken);
-  const ip=request.headers.get("CF-Connecting-IP")||"unknown";
-  verify.set("remoteip",ip);
-  let check;
-  try{const r=await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify",{method:"POST",body:verify});check=await r.json();}catch{return error(503,"Verification unavailable");}
-  if(!check.success||check.hostname!=="dianzdd123.github.io")return error(403,"Human verification failed");
-  const hour=Math.floor(Date.now()/3600000);
-  const hashBytes=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(ip+":"+hour));
-  const key="diana:"+Array.from(new Uint8Array(hashBytes)).map(b=>b.toString(16).padStart(2,"0")).join("");
-  const used=Number(await env.RATE_LIMIT.get(key)||0);
-  if(used>=15)return error(429,"Hourly question limit reached");
-  await env.RATE_LIMIT.put(key,String(used+1),{expirationTtl:3700});
+  if(question.length<4||question.length>2500)return error(400,"Question must be 4–2500 characters.");
+  // Session authorisation above has already validated a revocable access code.
   let kb,materialIndex;
   try{[kb,materialIndex]=await Promise.all([fetchJSON(canonical("data/knowledge.json")),fetchJSON(canonical("data/materials-index.json"))]);}
   catch{return error(503,"Course knowledge temporarily unavailable");}
