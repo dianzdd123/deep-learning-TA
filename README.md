@@ -79,12 +79,12 @@ Edit `backend/wrangler.toml`: replace
 
 ```bash
 npx wrangler login
+npx wrangler deploy --config backend/wrangler.toml
 npx wrangler secret put OPENAI_API_KEY --config backend/wrangler.toml
 npx wrangler secret put TURNSTILE_SECRET --config backend/wrangler.toml
-npx wrangler deploy --config backend/wrangler.toml
 ```
 
-Paste the two secret values only into the private terminal prompts,
+Deploy first to create the Worker, then paste the two secret values only into the private terminal prompts,
 not into the command arguments or GitHub. Record the resulting Worker
 HTTPS address (typically an address ending in `.workers.dev`).
 
