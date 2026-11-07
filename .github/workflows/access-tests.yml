@@ -1,0 +1,35 @@
+name: Diana student access checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'app.js'
+      - 'scripts/issue_codes.mjs'
+      - 'scripts/revoke_code.mjs'
+      - 'tests/**'
+      - '.github/workflows/access-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax checks
+        run: |
+          node --check backend/worker.js
+          node --check backend/access.js
+          node --check backend/prompt.js
+          node --check app.js
+          node --check scripts/issue_codes.mjs
+          node --check scripts/revoke_code.mjs
+      - name: Student code and revocation tests
+        run: node --test tests/access.test.mjs
