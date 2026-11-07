@@ -1,0 +1,269 @@
+{
+  "version": "2026-11-07",
+  "status": "draft—simplified handbook labelled for 10 November release; review before relying on policy answers",
+  "source_note": "Summarised from user-provided 9-page Deep Learning Final Project Simplified Handbook 2026/27; the full approved handbook and Canvas supersede it.",
+  "assessment_release": "2026-11-10",
+  "assessment_published": false,
+  "topics": [
+    {
+      "id": "optimisation",
+      "title": "Gradients and backpropagation",
+      "category": "Foundations",
+      "description": "Chain rule, loss gradients, gradient descent and computational graphs.",
+      "question": "Explain backpropagation step by step, then give me a small derivative to try myself.",
+      "keywords": [
+        "gradient",
+        "backpropagation",
+        "chain rule",
+        "loss",
+        "optimizer",
+        "learning rate"
+      ],
+      "answer": "Backpropagation applies the chain rule to compute how the loss changes with each parameter. Gradient descent then uses those gradients to update parameters. To check your understanding, take a single neuron y = wx + b with loss (y − t)². Can you work out dL/dw, starting with dL/dy? If you share your working, I can check the steps.",
+      "sources": [
+        {
+          "title": "Deep Learning main handbook",
+          "url": "https://github.com/dianzdd123/deep-learning-course-labs/blob/main/docs/main_course_handbook.md"
+        },
+        {
+          "title": "PyTorch autograd",
+          "url": "https://pytorch.org/tutorials/beginner/basics/autogradqs_tutorial.html"
+        }
+      ]
+    },
+    {
+      "id": "cnn",
+      "title": "Convolutional neural networks",
+      "category": "Architectures",
+      "description": "Feature maps, kernels, padding, receptive fields and shape tracing.",
+      "question": "Show me how to calculate CNN output dimensions, then quiz me.",
+      "keywords": [
+        "cnn",
+        "convolution",
+        "feature map",
+        "kernel",
+        "pooling",
+        "padding",
+        "stride",
+        "tensor shape"
+      ],
+      "answer": "A convolution builds feature maps by applying learned filters across local image patches. For one spatial dimension, the usual output length is floor((input + 2×padding − dilation×(kernel−1) −1)/stride +1). Try this: input width 32, kernel 3, padding 1, stride 2, dilation 1. What width do you predict? Check with the CNN lab and its notebook.",
+      "sources": [
+        {
+          "title": "CNN lab guide",
+          "url": "https://github.com/dianzdd123/deep-learning-course-labs/blob/main/labs/01_cnn.md"
+        },
+        {
+          "title": "CNN notebook",
+          "url": "https://github.com/dianzdd123/deep-learning-course-labs/blob/main/notebooks/01_cnn.ipynb"
+        }
+      ]
+    },
+    {
+      "id": "resnet",
+      "title": "Residual learning and ResNets",
+      "category": "Architectures",
+      "description": "Skip connections, residual blocks and controlled comparisons.",
+      "question": "Why do residual connections help optimisation, and how could I test that?",
+      "keywords": [
+        "resnet",
+        "residual",
+        "skip connection",
+        "batchnorm",
+        "identity block",
+        "deep network"
+      ],
+      "answer": "A residual block learns a change F(x) and adds a shortcut to form y = F(x) + x when dimensions match. The shortcut can make optimisation easier, but it does not guarantee that every residual network outperforms a plain one. The course lab asks for a controlled comparison: hold dataset, optimiser, batch size and update budget fixed, and inspect both training and validation curves. What observation would distinguish difficult optimisation from overfitting?",
+      "sources": [
+        {
+          "title": "ResNet lab guide",
+          "url": "https://github.com/dianzdd123/deep-learning-course-labs/blob/main/labs/02_resnet.md"
+        },
+        {
+          "title": "ResNet notebook",
+          "url": "https://github.com/dianzdd123/deep-learning-course-labs/blob/main/notebooks/02_resnet.ipynb"
+        }
+      ]
+    },
+    {
+      "id": "rnn",
+      "title": "RNNs, GRUs and LSTMs",
+      "category": "Architectures",
+      "description": "Temporal order, recurrent states, sequence lengths and padding.",
+      "question": "How can an RNN detect sequence order that a mean-based model cannot?",
+      "keywords": [
+        "rnn",
+        "gru",
+        "lstm",
+        "recurrent",
+        "sequence",
+        "time",
+        "padding",
+        "hidden state"
+      ],
+      "answer": "A mean-feature baseline can lose ordering information: reversing a sequence keeps its mean unchanged. A recurrent model updates state as it reads each item, allowing different responses to forward and reverse sequences. The lab compares mean-feature, RNN, GRU and LSTM models. First predict whether the two reversed sequences have the same mean, then decide what extra evidence would show the network has learnt order rather than a shortcut.",
+      "sources": [
+        {
+          "title": "RNN lab guide",
+          "url": "https://github.com/dianzdd123/deep-learning-course-labs/blob/main/labs/03_rnn.md"
+        },
+        {
+          "title": "RNN notebook",
+          "url": "https://github.com/dianzdd123/deep-learning-course-labs/blob/main/notebooks/03_rnn.ipynb"
+        }
+      ]
+    },
+    {
+      "id": "attention",
+      "title": "Attention and Transformers",
+      "category": "Architectures",
+      "description": "Tokens, attention scores, representations and sequence modelling.",
+      "question": "Explain what query, key and value do in self-attention using a small example.",
+      "keywords": [
+        "transformer",
+        "attention",
+        "query",
+        "key",
+        "value",
+        "token",
+        "embedding"
+      ],
+      "answer": "Self-attention uses a query to compare with keys, turns the similarities into weights, and combines the corresponding values. This is one way each token can gather context from other tokens. What changes when the keys and queries are projected from different representations? The optional bridge tutorial provides an entry point.",
+      "sources": [
+        {
+          "title": "Transformer bridge",
+          "url": "https://github.com/dianzdd123/deep-learning-course-labs/blob/main/labs/07_transformer_bridge.md"
+        }
+      ]
+    },
+    {
+      "id": "setup",
+      "title": "Colab, Jupyter and VS Code",
+      "category": "Practice",
+      "description": "Choose a runtime, select the correct kernel and run notebooks reliably.",
+      "question": "Help me debug my Colab or VS Code environment step by step.",
+      "keywords": [
+        "colab",
+        "jupyter",
+        "vscode",
+        "python",
+        "kernel",
+        "cuda",
+        "gpu",
+        "install",
+        "pip",
+        "torch",
+        "environment",
+        "import"
+      ],
+      "answer": "Start with the environment, not a package reinstall. For VS Code, confirm the project folder, Python interpreter and Jupyter kernel point to the same environment. For Colab, run the notebook setup cell, inspect the reported Python and PyTorch versions, and check torch.cuda.is_available() only if using a GPU. If you paste the exact error and tell me whether you're using Colab or VS Code, I can suggest a small diagnostic test.",
+      "sources": [
+        {
+          "title": "Colab instructions",
+          "url": "https://github.com/dianzdd123/deep-learning-course-labs/blob/main/docs/colab.md"
+        },
+        {
+          "title": "Setup lab",
+          "url": "https://github.com/dianzdd123/deep-learning-course-labs/blob/main/labs/00_setup.md"
+        }
+      ]
+    },
+    {
+      "id": "metrics",
+      "title": "Model evaluation and generalisation",
+      "category": "Research skills",
+      "description": "Data splits, leakage, accuracy, F1, RMSE and failure analysis.",
+      "question": "What is data leakage and how should I design a fair train/validation/test split?",
+      "keywords": [
+        "data split",
+        "leakage",
+        "test set",
+        "validation",
+        "overfit",
+        "overfitting",
+        "generalisation",
+        "f1",
+        "rmse",
+        "metrics",
+        "accuracy",
+        "class imbalance"
+      ],
+      "answer": "Training data fits the model; validation data supports model selection; the held-out test set estimates performance after choices are fixed. When images or windows are related by source contact, trial or participant, split the source groups before generating related examples. Otherwise similar examples can leak across splits. What is the unit of independence in your own dataset? That is often the first question to answer.",
+      "sources": [
+        {
+          "title": "Main course handbook",
+          "url": "https://github.com/dianzdd123/deep-learning-course-labs/blob/main/docs/main_course_handbook.md"
+        },
+        {
+          "title": "CNN lab: comparisons and errors",
+          "url": "https://github.com/dianzdd123/deep-learning-course-labs/blob/main/labs/01_cnn.md"
+        }
+      ]
+    },
+    {
+      "id": "coding",
+      "title": "Debugging PyTorch models",
+      "category": "Practice",
+      "description": "Trace tensor shapes, inspect gradients and test one hypothesis at a time.",
+      "question": "Teach me a systematic process for debugging tensor-shape errors in PyTorch.",
+      "keywords": [
+        "debug",
+        "error",
+        "runtimeerror",
+        "tensor",
+        "pytorch",
+        "shape",
+        "dimension",
+        "nan",
+        "loss",
+        "code"
+      ],
+      "answer": "First reduce the problem to one minibatch. Print input and target shapes, model output shape, dtype and device; then isolate the failing operation. For CrossEntropyLoss, the model should normally return raw logits rather than applying softmax first. Paste the smallest code snippet, complete traceback and expected shapes; I will help identify one test at a time rather than rewriting your whole project.",
+      "sources": [
+        {
+          "title": "Learning code guide",
+          "url": "https://github.com/dianzdd123/deep-learning-course-labs/blob/main/docs/learning_code.md"
+        },
+        {
+          "title": "Training tutorial",
+          "url": "https://github.com/dianzdd123/deep-learning-course-labs/blob/main/notebooks/00_setup_and_training.ipynb"
+        }
+      ]
+    },
+    {
+      "id": "research",
+      "title": "Critical thinking in AI experiments",
+      "category": "Research skills",
+      "description": "Hypotheses, baselines, controlled ablations and evidence-led conclusions.",
+      "question": "How do I design a controlled experiment rather than just report a high accuracy?",
+      "keywords": [
+        "research",
+        "ablation",
+        "hypothesis",
+        "baseline",
+        "experiment",
+        "reproducibility",
+        "comparison",
+        "scientific",
+        "evidence"
+      ],
+      "answer": "Start by stating the claim you want to test. Write down a baseline and the single factor you propose to change. Hold the data partition, evaluation protocol and budget constant where possible. Plan failure analysis before interpreting a score. Finally ask: what alternative explanation could produce the same observation? The CNN and ResNet labs provide concrete examples of controlled comparisons.",
+      "sources": [
+        {
+          "title": "ResNet lab: controlled comparison",
+          "url": "https://github.com/dianzdd123/deep-learning-course-labs/blob/main/labs/02_resnet.md"
+        },
+        {
+          "title": "CNN lab: evidence and ablation",
+          "url": "https://github.com/dianzdd123/deep-learning-course-labs/blob/main/labs/01_cnn.md"
+        }
+      ]
+    }
+  ],
+  "policy": {
+    "general": "During assessed coursework, provide concept explanations, debugging guidance, diagnostic questions and small illustrative examples. Do not supply complete assessed solutions, fabricated results or ready-to-submit reports. Students must follow their approved handbook and Canvas notices.",
+    "ai": "AI-assisted explanations are fallible and require independent verification. Do not upload personally identifying information or confidential student work.",
+    "priority": "Canvas announcements and the full approved handbook outrank the simplified handbook and Diana's summaries.",
+    "contact": "For module-specific decisions, contact the teaching team using official course channels."
+  }
+}
