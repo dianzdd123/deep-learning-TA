@@ -15,3 +15,25 @@
 .diana-structured .citation-why{display:block;font-size:11px;line-height:1.55;color:#6a7b91;padding-top:2px}
 .diana-structured .source-absence{font-size:11px;line-height:1.6;color:#6d7b93;background:#edf2fa;padding:9px 10px;border-radius:7px}
 .diana-structured .caveat{font-size:11px;color:#6f7890}
+
+/* Student activation gate: only authorised students can see and use the chat form. */
+.chat:not(.is-unlocked) .messages,.chat:not(.is-unlocked) .composer{display:none}
+.chat.is-unlocked .activation-gate{display:none}
+.activation-gate[hidden],.unlocked-session[hidden]{display:none!important}
+.activation-gate{max-width:530px;width:100%;margin:auto;padding:40px 25px 50px;text-align:center}
+.activation-icon{height:66px;width:66px;margin:0 auto 15px;display:grid;place-items:center;border-radius:22px;color:#fff;background:linear-gradient(130deg,#244c90,#8473c8);font:normal 28px Georgia,serif}
+.activation-gate h3{font:normal 30px Georgia,serif;letter-spacing:-.035em;margin:7px 0 12px}
+.activation-gate>p{color:#64768f;font-size:13px;line-height:1.8}
+.activation-gate form{margin:23px auto 0;text-align:left;max-width:350px}
+.activation-gate label{display:block;font-weight:650;font-size:12px;margin-bottom:8px;color:#24466d}
+.activation-gate input{width:100%;border:1px solid #bfcfe2;padding:13px;border-radius:9px;font-size:15px;letter-spacing:.09em;color:#162e4c}
+.activation-gate input:focus{outline:2px solid #6d83bd;outline-offset:1px}
+.activation-gate .turnstile{margin:13px auto;min-height:15px}
+.activation-gate form button{width:100%;border:0;border-radius:9px;background:#173d78;color:white;padding:13px 18px;font-size:13px;font-weight:700}
+.activation-gate form button:hover{background:#235395}
+.activation-gate form button:disabled{opacity:.55}
+.activation-gate #activation-feedback{color:#4a6586;font-size:12px;line-height:1.6;margin:13px 0}
+.activation-gate .activation-privacy{font-size:11px;color:#8c9cb0;margin-top:18px}
+.unlocked-session{padding:8px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;background:#eff7f4;color:#236452;font-size:11px;border-bottom:1px solid #d2e5dd}
+.unlocked-session button{border:1px solid #b5d7cb;background:#fff;color:#276658;font-size:11px;padding:6px 10px;border-radius:7px}
+@media(max-width:680px){.activation-gate{padding:28px 18px}.activation-gate h3{font-size:26px}}
