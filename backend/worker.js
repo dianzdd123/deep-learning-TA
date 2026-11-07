@@ -24,7 +24,7 @@ function normaliseChunk(c,index){if(!c||!validPublicPath(c.path)||!c.text||typeo
  // To cite page/slide numbers we require exact indexed metadata, not regex estimates.
  if(kind==="handbook"&&!label.startsWith("p. ")&&!label.startsWith("section "))return null;
  if(kind==="slides"&&!label.startsWith("slide "))return null;
- return {id:"doc-"+index,kind,title:c.title,label,url:canonical(c.path),text:String(c.text).slice(0,1300),authority:c.authority||""};
+ return {id:"doc-"+index,kind,title:c.title,label,url:canonical(c.path)+(typeof c.page==="number"?"#page="+c.page:""),text:String(c.text).slice(0,1300),authority:c.authority||""};
 }
 function curateTopics(topics,question){
  return topics.map(t=>({...t,text:[t.title,t.description,t.answer,t.keywords?.join(" ")].join(" ")}))
@@ -42,7 +42,7 @@ function curatedExternal(topics){
  return refs.slice(0,3);
 }
 function references(answer,available,kind){
- const key=kind+"_refs";const requested=Array.isArray(answer[key])?answer[key]:[];
+ const key=(kind==="slides"?"slide_refs":kind+"_refs");const requested=Array.isArray(answer[key])?answer[key]:[];
  const allowed=new Map(available.filter(s=>s.kind===kind).map(s=>[s.id,s]));
  const unique=new Set();const out=[];
  for(const item of requested){const s=allowed.get(item?.id);if(!s||unique.has(s.id))continue;unique.add(s.id);out.push({id:s.id,kind,title:s.title,label:s.label,url:s.url,why:String(item.why||"").slice(0,200)});if(out.length>=2)break;}
@@ -106,7 +106,7 @@ export default {
     answer=JSON.parse(output);
   }catch{return error(502,"AI answer could not be parsed");}
   const sections=["handbook","slides","tutorial","external"];
-  const mapping={handbook:"handbook",slides:"slide",tutorial:"tutorial",external:"external"};
+  const mapping={handbook:"handbook",slides:"slides",tutorial:"tutorial",external:"external"};
   const refs={};
   for(const s of sections){refs[s]=references(answer,available,mapping[s]);}
   const safe={brief_answer:String(answer.brief_answer||"").slice(0,2300),
