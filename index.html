@@ -50,6 +50,20 @@
   <div class="chat">
     <div class="chat-header"><div class="chat-identity"><div class="diana-avatar">D<span>✳</span></div><div><h2 id="ask-heading">Diana <span class="status-dot online"></span></h2><p>Deep Learning course companion</p></div></div><button id="reset" class="reset" type="button" aria-label="Start a new chat">↺ New chat</button></div>
     <div class="service-bar"><span id="service-status">Loading course notes…</span><span>Course sources linked in answers</span></div>
+    <section id="activation-gate" class="activation-gate" aria-labelledby="activation-title">
+      <div class="activation-icon" aria-hidden="true">D ✳</div>
+      <h3 id="activation-title">Activate your Diana access</h3>
+      <p>Diana's AI questions are available to students who have received an activation code from the teaching team. Enter your code once to begin your study session.</p>
+      <form id="activation-form">
+        <label for="activation-code">Course activation code</label>
+        <input id="activation-code" name="activation-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="32" placeholder="DIANA-XXXX-XXXX-XXXX" required>
+        <div id="turnstile" class="turnstile"></div>
+        <button id="activate" type="submit">Activate Diana <span aria-hidden="true">→</span></button>
+        <p id="activation-feedback" role="status" aria-live="polite">You may still explore the public course learning library below.</p>
+      </form>
+      <p class="activation-privacy">Codes are issued by your teaching team. Do not post or share your code. No student ID is required.</p>
+    </section>
+    <div id="unlocked-session" class="unlocked-session" hidden><span id="access-label">Access active</span><button type="button" id="sign-out">Deactivate</button></div>
     <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions">
       <article class="message assistant"><span class="message-icon">D</span><div><p class="message-name">DIANA <span>· course companion</span></p><div class="bubble">Hello! I'm Diana, Dandan's digital teaching assistant.<br><br>Tell me what you're trying to understand, what you've already tried, or which part of an experiment doesn't make sense. I'll point you towards relevant course materials and help you think it through.</div></div></article>
     </div>
@@ -60,8 +74,7 @@
         <textarea id="question" placeholder="What would you like to understand?" rows="2" minlength="4" maxlength="2500" required></textarea>
         <div class="form-footer"><span>Enter to send · Shift + Enter for a new line</span><button id="send" type="submit">Ask Diana <span aria-hidden="true">↗</span></button></div>
       </form>
-      <div id="turnstile" class="turnstile"></div>
-      <p class="note">Diana's explanations are teaching guidance, not official module decisions. Canvas and the latest approved handbook take precedence. Avoid sharing personal information, passwords or confidential student work.</p>
+      <p class="note">Access is controlled by an activation code. Diana's explanations are teaching guidance, not official module decisions. Canvas and the latest approved handbook take precedence. Avoid sharing personal information, passwords or confidential student work.</p>
     </div>
   </div>
 </section>
