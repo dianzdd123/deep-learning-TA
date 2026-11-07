@@ -34,8 +34,8 @@ for(let i=0;i<count;i++){
  generated.push({code,key,record});
 }
 const quote=value=>'"'+String(value).replaceAll('"','""')+'"';
-const csv="label,activation_code,expiry_utc\n"+
- generated.map(x=>[x.record.label,x.code,x.record.expires_at].map(quote).join(",")).join("\n")+"\n";
+const csv="label,activation_code,kv_key,expiry_utc\n"+
+ generated.map(x=>[x.record.label,x.code,x.key,x.record.expires_at].map(quote).join(",")).join("\n")+"\n";
 mkdirSync(dirname(output),{recursive:true});
 writeFileSync(output,csv,{encoding:"utf-8",mode:0o600,flag:"wx"});
 console.log("PRIVATE activation codes created:",output);
