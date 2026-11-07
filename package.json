@@ -1,0 +1,9 @@
+{
+  "name": "diana-deep-learning-ta",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/access.test.mjs",
+    "check": "node --check backend/worker.js && node --check backend/access.js && node --check backend/prompt.js && node --check app.js"
+  }
+}
