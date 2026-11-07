@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#072655"><meta name="description" content="Diana — PA to Dandan, your Deep Learning course study companion at Imperial College London.">
+<meta property="og:title" content="Diana | Deep Learning with Dandan Zhang">
+<meta property="og:description" content="Understand the ideas. Test the code. Question the evidence.">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="stylesheet" href="styles.css">
+<title>Diana — PA to Dandan | Deep Learning</title>
+<script src="app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#ask">Skip to Diana</a>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="wordmark" href="./" aria-label="Diana home"><span class="wordmark-icon">D<span>✳</span></span><span>DIANA <small>· DEEP LEARNING</small></span></a>
+    <nav aria-label="Site navigation"><a href="#ask">Ask Diana</a><a href="#explore">Learning library</a><a href="#resources">Resources</a></nav>
+    <a class="site-link" href="https://github.com/dianzdd123/deep-learning-TA" target="_blank" rel="noopener noreferrer">Course website source <span aria-hidden="true">↗</span></a>
+  </div>
+</header>
+<main>
+<section class="hero">
+  <div class="stars" aria-hidden="true"></div>
+  <div class="hero-content">
+    <p class="eyebrow"><span class="status-dot"></span> DEEP LEARNING · IMPERIAL COLLEGE LONDON</p>
+    <div class="hero-flex"><div>
+      <h1>Meet <em>Diana.</em></h1>
+      <p class="subheading">Digital teaching assistant <span class="dash"></span> PA to Dandan</p>
+      <p class="hero-description">Good questions make better researchers. I'll help you understand the mathematics, follow the code and design experiments you can explain — not just produce answers.</p>
+      <div class="hero-actions"><a class="primary-link" href="#ask">Ask Diana <span>↗</span></a><a class="secondary-link" href="#explore">Browse course topics <span>→</span></a></div>
+    </div><div class="orb" aria-hidden="true"><div class="ring one"></div><div class="ring two"></div><div class="sphere">D<span>✦</span></div></div></div>
+    <div class="hero-steps"><span>01 &nbsp; Understand</span><span>02 &nbsp; Experiment</span><span>03 &nbsp; Evaluate</span></div>
+  </div>
+</section>
+<section class="workspace" id="ask" aria-labelledby="ask-heading">
+  <aside class="sidebar">
+    <p class="eyebrow dark">YOUR COURSE SPACE</p><h2>Deep Learning <span>✳</span></h2>
+    <p class="sidebar-lede">From mathematical intuition to reproducible experiments, one question at a time.</p>
+    <div class="tip"><span class="tip-icon">✧</span><div><strong>How to use Diana</strong><p>Tell me what you tried. Ask me to explain a mistake or challenge your reasoning.</p></div></div>
+    <p class="sidebar-label">TRY A QUESTION</p>
+    <div id="suggestions" class="suggestions">
+      <button data-question="What is backpropagation, and why is the chain rule needed?" type="button"><span>↗</span> Explain backpropagation</button>
+      <button data-question="How can I calculate the output shape of a convolutional layer?" type="button"><span>↗</span> CNN tensor shapes</button>
+      <button data-question="How can I tell whether my model is overfitting?" type="button"><span>↗</span> Diagnose overfitting</button>
+      <button data-question="My VS Code notebook is using the wrong Python kernel. How should I debug it?" type="button"><span>↗</span> Notebook setup help</button>
+    </div>
+    <div class="instructor"><span class="avatar-small">DZ</span><div><strong>Dr Dandan Zhang</strong><small>Module lead · Bioengineering</small></div></div>
+  </aside>
+  <div class="chat">
+    <div class="chat-header"><div class="chat-identity"><div class="diana-avatar">D<span>✳</span></div><div><h2 id="ask-heading">Diana <span class="status-dot online"></span></h2><p>Deep Learning course companion</p></div></div><button id="reset" class="reset" type="button" aria-label="Start a new chat">↺ New chat</button></div>
+    <div class="service-bar"><span id="service-status">Loading course notes…</span><span>Course sources linked in answers</span></div>
+    <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions">
+      <article class="message assistant"><span class="message-icon">D</span><div><p class="message-name">DIANA <span>· course companion</span></p><div class="bubble">Hello! I'm Diana, Dandan's digital teaching assistant.<br><br>Tell me what you're trying to understand, what you've already tried, or which part of an experiment doesn't make sense. I'll point you towards relevant course materials and help you think it through.</div></div></article>
+    </div>
+    <div class="composer">
+      <div id="modes" class="modes" role="group" aria-label="Assistance mode"><button class="active" data-mode="understand" type="button">✧ Understand</button><button data-mode="debug" type="button">⌘ Debug code</button><button data-mode="reason" type="button">◇ Check reasoning</button></div>
+      <form id="ask-form">
+        <label class="sr-only" for="question">Your question</label>
+        <textarea id="question" placeholder="What would you like to understand?" rows="2" minlength="4" maxlength="2500" required></textarea>
+        <div class="form-footer"><span>Enter to send · Shift + Enter for a new line</span><button id="send" type="submit">Ask Diana <span aria-hidden="true">↗</span></button></div>
+      </form>
+      <div id="turnstile" class="turnstile"></div>
+      <p class="note">Diana's explanations are teaching guidance, not official module decisions. Canvas and the latest approved handbook take precedence. Avoid sharing personal information, passwords or confidential student work.</p>
+    </div>
+  </div>
+</section>
+<section id="explore" class="section" aria-labelledby="library-heading">
+  <div class="section-top"><div><p class="eyebrow dark">THE LEARNING LIBRARY</p><h2 id="library-heading">Follow your curiosity.</h2><p>Find a starting point, then ask a better question.</p></div><label class="search-box"><span aria-hidden="true">⌕</span><span class="sr-only">Search topics</span><input id="search" type="search" placeholder="Search a topic…"></label></div>
+  <div class="filters" id="filters" role="group" aria-label="Topic filters"><button data-filter="all" class="active">All topics</button><button data-filter="Foundations">Foundations</button><button data-filter="Architectures">Architectures</button><button data-filter="Practice">Practice</button><button data-filter="Research skills">Research skills</button></div>
+  <div id="topics" class="topics"><p>Loading topics…</p></div>
+</section>
+<section id="resources" class="section resources" aria-labelledby="resources-heading"><div class="section-top"><div><p class="eyebrow dark">KEEP EXPLORING</p><h2 id="resources-heading">Learn beyond the answer.</h2></div></div>
+  <div class="resource-grid">
+    <a href="https://github.com/dianzdd123/deep-learning-course-labs" target="_blank" rel="noopener noreferrer"><span class="resource-symbol">⌘</span><h3>Course tutorials <span>↗</span></h3><p>Handbooks, notebooks and Python examples. GitHub access may be needed while the source repository is private.</p></a>
+    <a href="https://pytorch.org/tutorials/" target="_blank" rel="noopener noreferrer"><span class="resource-symbol">◉</span><h3>PyTorch tutorials <span>↗</span></h3><p>Official guidance on tensors, model training, autograd and neural network implementations.</p></a>
+    <a href="https://colab.research.google.com/" target="_blank" rel="noopener noreferrer"><span class="resource-symbol">▣</span><h3>Google Colab <span>↗</span></h3><p>Run and inspect notebooks in a browser. Save your own copy before editing.</p></a>
+  </div>
+</section>
+</main>
+<footer class="footer"><div class="footer-inside"><div class="footer-brand"><span>D ✳</span> <strong>Diana</strong><small>PA to Dandan · Deep Learning</small></div><p>Created for independent learning and critical thinking · <a href="https://github.com/dianzdd123/deep-learning-TA">Diana</a></p><small>AI-assisted answers require verification. Do not treat generated explanations as assessment instructions.</small></div></footer>
+</body></html>
