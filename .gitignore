@@ -6,3 +6,11 @@ diana-private-codes*.csv
 .env.*
 .dev.vars
 .dev.vars.*
+
+# Local development artefacts and credentials
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.DS_Store
+!.env.example

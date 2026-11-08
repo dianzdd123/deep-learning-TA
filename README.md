@@ -1,5 +1,19 @@
 # Diana — PA to Dandan
 
+## Start here
+
+
+**Scope:** Static topic guidance works independently; live AI requires a configured backend and valid activation code.
+
+| Need | Where to start |
+|---|---|
+| Setup, file map, inputs/outputs and troubleshooting | [Reuse guide](docs/REUSE.md) |
+| Local structural validation | `python scripts/check_repository.py` (Python 3.10+) |
+| Proposed fixes and reproducibility details | [Contributing](CONTRIBUTING.md) |
+
+The structural check does not run experiments or certify hardware, model accuracy or dependency compatibility. Reuse permissions need clarification: this checkout has no repository-wide licence file.
+
+
 **Independent Deep Learning course companion** for students taught by Dr Dandan Zhang at Imperial College London.
 
 - **GitHub:** https://github.com/dianzdd123/deep-learning-TA
